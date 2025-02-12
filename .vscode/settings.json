@@ -1,0 +1,18 @@
+{
+    "editor.formatOnSave": true,
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "prettier.semi": true,
+    "prettier.trailingComma": "es5",
+    "prettier.singleQuote": true,
+    "prettier.printWidth": 100,
+    "prettier.tabWidth": 2,
+    "typescript.tsdk": "node_modules/typescript/lib"
+}
