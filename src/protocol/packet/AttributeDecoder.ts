@@ -26,9 +26,6 @@ export class AttributeDecoder {
       attributes.push(attribute);
       decoder.offset += length;
     }
-
-    console.log(attributes);
-
     return new Attributes(attributes);
   }
 
