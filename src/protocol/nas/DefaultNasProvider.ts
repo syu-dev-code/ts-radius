@@ -10,6 +10,10 @@ export class DefaultNasProvider implements INasProvider {
   }
 
   async getNas(address: RemoteInfo['address']): Promise<NAS | null> {
-    return this.store.find((nas) => nas.match(address)) ?? null;
+    const matchPromises = this.store.map(async (nas) => {
+      const matched = await nas.match(address);
+      return matched ? nas : Promise.reject();
+    });
+    return Promise.any(matchPromises).catch(() => null);
   }
 }
