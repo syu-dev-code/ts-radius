@@ -1,13 +1,25 @@
+import { AddressMatcher } from '@app/protocol/address/AddressMatcher';
+
 export class NAS {
   constructor(readonly config: NASConfig) {}
 
   /**
    * Matches the NAS with the given address
-   * @param address - The address to match
+   * @param srcAddress - The address to match
    * @returns True if the NAS matches the address, false otherwise
    */
-  async match(address: string): Promise<boolean> {
-    return this.config.address.value === address;
+  async match(srcAddress: string): Promise<boolean> {
+    const type = this.config.address.type;
+    const settingAddress = this.config.address.value;
+
+    switch (type) {
+      case 'ipaddr':
+        return AddressMatcher.matchIpAddress(settingAddress, srcAddress);
+      case 'ipv4addr':
+        return AddressMatcher.matchIpv4Address(settingAddress, srcAddress);
+      case 'ipv6addr':
+        return AddressMatcher.matchIpv6Address(settingAddress, srcAddress);
+    }
   }
 }
 
