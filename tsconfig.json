@@ -9,6 +9,7 @@
     "noEmit": false,
     "strict": true,
     "moduleResolution": "node",
+    "experimentalDecorators": true,
     "baseUrl": ".",
     "paths": {
       "@app/*": ["src/*"],
