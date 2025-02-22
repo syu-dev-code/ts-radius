@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2015",
+    "target": "ES2022",
     "module": "commonjs",
     "declaration": true,
     "outDir": "./dist",
@@ -9,7 +9,6 @@
     "noEmit": false,
     "strict": true,
     "moduleResolution": "node",
-    "experimentalDecorators": true,
     "baseUrl": ".",
     "paths": {
       "@app/*": ["src/*"],
