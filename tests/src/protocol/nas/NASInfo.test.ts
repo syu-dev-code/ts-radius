@@ -1,3 +1,3 @@
-import { NASInfo } from '@app/protocol/nas/NAS';
+import { NAS } from '@app/protocol/nas/NAS';
 
-describe('@app/protocol/nas/NASInfo', () => {});
+describe('@app/protocol/nas/NAS', () => {});
