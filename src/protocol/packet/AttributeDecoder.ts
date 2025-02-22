@@ -4,6 +4,7 @@ import { AttributeFactory } from '@app/protocol/packet/AttributeFactory';
 import { IAttribute } from '@app/protocol/packet/attributes/IAttribute';
 import { Attributes } from '@app/protocol/packet/attributes/Attributes';
 import { AttributeError } from '@app/error/AttributeError';
+import { NAS } from '../nas/NAS';
 
 export class AttributeDecoder {
   private static HEADER_LENGTH = 20;
@@ -18,18 +19,18 @@ export class AttributeDecoder {
    * @param secret The secret to use for decoding.
    * @returns The decoded attributes or a PacketDecodeError if the buffer is invalid.
    */
-  static decode(buffer: Buffer, secret: string): Attributes {
+  static decode(buffer: Buffer, nas: NAS): Attributes {
     const decoder = new AttributeDecoder(buffer);
     const attributes: IAttribute[] = [];
     while (decoder.offset < buffer.length) {
-      const [attribute, length] = decoder.decodeOne(decoder.offset, secret);
+      const [attribute, length] = decoder.decodeOne(decoder.offset, nas);
       attributes.push(attribute);
       decoder.offset += length;
     }
     return new Attributes(attributes);
   }
 
-  private decodeOne(offset: number, secret: string): [attribute: IAttribute, length: number] {
+  private decodeOne(offset: number, nas: NAS): [attribute: IAttribute, length: number] {
     if (this.buffer.length - offset < 2) {
       throw new PacketDecodeError(`Incomplete attribute at offset ${offset}`, 'INVALID_ATTRIBUTE');
     }
@@ -56,7 +57,7 @@ export class AttributeDecoder {
         this.buffer,
         offset,
         offset + length,
-        secret
+        nas
       );
       if (maybeAttribute instanceof Error) {
         throw maybeAttribute;

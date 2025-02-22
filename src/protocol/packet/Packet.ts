@@ -3,7 +3,7 @@ import { PacketDecodeError } from '@app/error/PacketDecodeError';
 import { Code } from '@app/protocol/packet/Code';
 import { AttributeDecoder } from '@app/protocol/packet/AttributeDecoder';
 import { Attributes } from '@app/protocol/packet/attributes/Attributes';
-
+import { NAS } from '@app/protocol/nas/NAS';
 export class Packet {
   // RFC2865: min packet size
   private static readonly MIN_LENGTH = 20;
@@ -20,7 +20,7 @@ export class Packet {
     readonly attributes: Attributes
   ) {}
 
-  static from(packet: Buffer, secret: string): Packet | PacketDecodeError {
+  static from(packet: Buffer, nas: NAS): Packet | PacketDecodeError {
     if (packet.length > this.MAX_LENGTH) {
       return new PacketDecodeError(
         `Packet too large: ${packet.length} bytes (maximum ${this.MAX_LENGTH})`,
@@ -60,7 +60,7 @@ export class Packet {
       return new PacketDecodeError('Invalid authenticator length', 'INVALID_AUTHENTICATOR');
     }
 
-    const attributes = AttributeDecoder.decode(packet, secret);
+    const attributes = AttributeDecoder.decode(packet, nas);
     if (attributes instanceof PacketDecodeError) {
       return attributes;
     }
@@ -69,7 +69,7 @@ export class Packet {
 
   private static _id: number = 1;
 
-  encode(secret: string): Buffer {
+  encode(nas: NAS): Buffer {
     Packet._id++;
     const length = 20;
     const buffer = Buffer.alloc(length);

@@ -1,29 +1,26 @@
 import type { RemoteInfo } from 'dgram';
 import { Packet } from '@app/protocol/packet/Packet';
 import { IPacketHandler } from '@app/server/handlers/IPacketHandler';
-import { ISecretProvider } from '@app/protocol/secret/ISecretProvider';
+import { INasProvider } from '@app/protocol/nas/INasProvider';
 import { PacketDecodeError } from '@app/error/PacketDecodeError';
 import { Logger } from '@app/logger/Logger';
+import { NAS } from '@app/protocol/nas/NAS';
 
 export class RadiusPacketHandler implements IPacketHandler {
-  private secretProvider: ISecretProvider;
-
-  constructor(secretProvider: ISecretProvider) {
-    this.secretProvider = secretProvider;
-  }
+  constructor(private readonly nasProvider: INasProvider) {}
 
   async handle(buffer: Buffer, rinfo: RemoteInfo): Promise<Buffer | null> {
     try {
-      const secret = await this.secretProvider.getSecret(rinfo.address);
-      if (secret === null) {
-        throw new Error('Secret not found');
+      const nas = await this.nasProvider.getNas(rinfo.address);
+      if (nas === null) {
+        throw new Error('NAS not found');
       }
-      const packet = Packet.from(buffer, secret);
+      const packet = Packet.from(buffer, nas);
       if (packet instanceof PacketDecodeError) {
         throw packet;
       }
 
-      const response = await this.createResponse(packet, secret);
+      const response = await this.createResponse(packet, nas);
       Logger.log('RADIUS_ON_HANDLE_SUCCESS', { ...rinfo });
       return response;
     } catch (error) {
@@ -36,7 +33,7 @@ export class RadiusPacketHandler implements IPacketHandler {
     // Nothing to do
   }
 
-  async createResponse(packet: Packet, secret: string): Promise<Buffer | null> {
-    return packet.encode(secret);
+  async createResponse(packet: Packet, nas: NAS): Promise<Buffer | null> {
+    return packet.encode(nas);
   }
 }

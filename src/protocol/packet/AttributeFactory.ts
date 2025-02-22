@@ -1,5 +1,6 @@
 import { IAttribute } from '@app/protocol/packet/attributes/IAttribute';
 import { ATTRIBUTES_ENTRIES } from '@app/protocol/packet/attributes/AttributeEntries';
+import { NAS } from '../nas/NAS';
 
 export class AttributeFactory {
   static create(
@@ -7,12 +8,12 @@ export class AttributeFactory {
     buffer: Buffer,
     start: number,
     end: number,
-    secret: string
+    nas: NAS
   ): IAttribute | Error {
     if (!this.isDefined(type)) {
       return new Error(`Unknown attribute type: ${type}`);
     }
-    return new ATTRIBUTES_ENTRIES[type](buffer, start, end, secret);
+    return new ATTRIBUTES_ENTRIES[type](buffer, start, end, nas);
   }
   static isDefined(type: number): type is keyof typeof ATTRIBUTES_ENTRIES {
     return type in ATTRIBUTES_ENTRIES;
