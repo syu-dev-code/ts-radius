@@ -1,6 +1,6 @@
 import { IAttribute } from '@app/protocol/packet/attributes/IAttribute';
 import { ATTRIBUTES_ENTRIES } from '@app/protocol/packet/attributes/AttributeEntries';
-import { NAS } from '../nas/NAS';
+import { NAS } from '@app/protocol/nas/NAS';
 
 export class AttributeFactory {
   static create(

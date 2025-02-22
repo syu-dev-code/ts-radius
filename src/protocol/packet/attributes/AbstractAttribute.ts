@@ -1,6 +1,5 @@
 import { AttributeError } from '@app/error/AttributeError';
 import { IAttribute } from '@app/protocol/packet/attributes/IAttribute';
-import { Attributes } from '@app/protocol/packet/attributes/Attributes';
 import { AttributeClass } from '@app/types/Attribute';
 import { Printable } from '@app/types/Utils';
 
