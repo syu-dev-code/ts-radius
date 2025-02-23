@@ -15,7 +15,7 @@ export class AddressMatcher {
     if (settingAddress.includes('/')) {
       return this.matchCidrAddress(settingAddress, srcAddress);
     }
-    return this.matchDnsAddress(settingAddress, srcAddress);
+    return this.matchResolvedHostname(settingAddress, srcAddress);
   }
 
   /**
@@ -52,17 +52,17 @@ export class AddressMatcher {
 
   /**
    * Attempts to resolve a domain name and match against the source address
-   * @param settingAddress - The domain name to resolve
-   * @param srcAddress - The source IP address to check
+   * @param hostname - The domain name to resolve
+   * @param ipAddress - The source IP address to check
    * @returns True if the resolved address matches, false otherwise
    */
-  private static async matchDnsAddress(
-    settingAddress: string,
-    srcAddress: string
+  private static async matchResolvedHostname(
+    hostname: string,
+    ipAddress: string
   ): Promise<boolean> {
     try {
-      const addresses = await dns.resolve(settingAddress);
-      return addresses.includes(srcAddress);
+      const addresses = await dns.resolve(hostname);
+      return addresses.includes(ipAddress);
     } catch {
       return false;
     }
@@ -82,6 +82,37 @@ export class AddressMatcher {
       : this.matchIpv6Cidr(network, mask, srcAddress);
   }
 
+  private static matchCidr(
+    network: string,
+    srcAddress: string,
+    mask: number,
+    bitsPerUnit: 8 | 16,
+    expandAddress: (ip: string) => number[]
+  ): boolean {
+    const networkBits = expandAddress(network);
+    const srcBits = expandAddress(srcAddress);
+
+    const maskUnits = Math.floor(mask / bitsPerUnit);
+    const remainingBits = mask % bitsPerUnit;
+
+    for (let i = 0; i < maskUnits; i++) {
+      if (networkBits[i] !== srcBits[i]) {
+        return false;
+      }
+    }
+
+    if (remainingBits === 0) {
+      return true;
+    }
+
+    const maxValue = 1 << bitsPerUnit;
+    const maskValue = maxValue - (1 << (bitsPerUnit - remainingBits));
+    const maskedNetworkBits = networkBits[maskUnits] & maskValue;
+    const maskedSourceBits = srcBits[maskUnits] & maskValue;
+
+    return maskedNetworkBits === maskedSourceBits;
+  }
+
   /**
    * Matches an IPv4 address against a CIDR range
    * @param network - The network portion of the CIDR
@@ -90,24 +121,10 @@ export class AddressMatcher {
    * @returns True if the address is in the CIDR range, false otherwise
    */
   private static matchIpv4Cidr(network: string, mask: number, srcAddress: string): boolean {
-    const networkBits = network.split('.').map((n) => parseInt(n, 10));
-    const srcBits = srcAddress.split('.').map((n) => parseInt(n, 10));
-
-    const maskOctets = Math.floor(mask / 8);
-    const remainingBits = mask % 8;
-
-    for (let i = 0; i < maskOctets; i++) {
-      if (networkBits[i] !== srcBits[i]) return false;
-    }
-
-    if (remainingBits > 0) {
-      const maskByte = 256 - (1 << (8 - remainingBits));
-      if ((networkBits[maskOctets] & maskByte) !== (srcBits[maskOctets] & maskByte)) {
-        return false;
-      }
-    }
-
-    return true;
+    const expand = (ip: string): number[] => {
+      return ip.split('.').map((n) => parseInt(n, 10));
+    };
+    return this.matchCidr(network, srcAddress, mask, 8, expand);
   }
 
   /**
@@ -118,30 +135,9 @@ export class AddressMatcher {
    * @returns True if the address is in the CIDR range, false otherwise
    */
   private static matchIpv6Cidr(network: string, mask: number, srcAddress: string): boolean {
-    const expandIPv6 = (ip: string): number[] => {
-      return ip
-        .split(':')
-        .map((part) => part || '0')
-        .map((part) => parseInt(part, 16));
+    const expand = (ip: string): number[] => {
+      return ip.split(':').map((part) => parseInt(part || '0', 16));
     };
-
-    const networkBits = expandIPv6(network);
-    const srcBits = expandIPv6(srcAddress);
-
-    const maskWords = Math.floor(mask / 16);
-    const remainingBits = mask % 16;
-
-    for (let i = 0; i < maskWords; i++) {
-      if (networkBits[i] !== srcBits[i]) return false;
-    }
-
-    if (remainingBits > 0) {
-      const maskWord = 65536 - (1 << (16 - remainingBits));
-      if ((networkBits[maskWords] & maskWord) !== (srcBits[maskWords] & maskWord)) {
-        return false;
-      }
-    }
-
-    return true;
+    return this.matchCidr(network, srcAddress, mask, 16, expand);
   }
 }
