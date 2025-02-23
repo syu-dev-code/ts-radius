@@ -1,7 +1,7 @@
 import { Logger } from '@app/logger/Logger';
 import { IPacketHandler } from '@app/server/handlers/IPacketHandler';
 import type { RemoteInfo } from 'dgram';
-import PromiseQueue from 'promise-queue';
+import { PromiseQueue } from '@app/lib/PromiseQueue';
 
 export class ConcurrentPacketHandler implements IPacketHandler {
   /**
@@ -27,7 +27,7 @@ export class ConcurrentPacketHandler implements IPacketHandler {
   private isQueueLocked: boolean = false;
 
   constructor(concurrency: number, delegate: IPacketHandler, timeoutOnStop: number = 10000) {
-    this.queue = new PromiseQueue(concurrency, Number.POSITIVE_INFINITY);
+    this.queue = new PromiseQueue(concurrency);
     this.delegate = delegate;
     this.timeoutOnStop = timeoutOnStop;
   }
