@@ -1,4 +1,4 @@
-import { Logger, ProxyLogger } from '@app/logger/Logger';
+import { Logger } from '@app/logger/Logger';
 import { IPacketHandler } from '@app/server/handlers/IPacketHandler';
 import type { RemoteInfo } from 'dgram';
 import PromiseQueue from 'promise-queue';
@@ -54,7 +54,7 @@ export class ConcurrentPacketHandler implements IPacketHandler {
     await new Promise<void>((resolve) => {
       const clearup = async (isTimeout: boolean) => {
         if (isTimeout) {
-          await Logger.log('Timeout on stop', 'warning');
+          await Logger.log('CONCURRENT_PACKET_HANDLER_ON_STOP_TIMEOUT', {});
         }
         clearInterval(pollingTimer);
         clearTimeout(timeoutTimer);

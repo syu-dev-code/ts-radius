@@ -30,6 +30,11 @@ export const LOG_ENTRIES = {
     message: 'Failed to handle packet from ${address}:${port} (${family}). ${error}',
   },
 
+  CONCURRENT_PACKET_HANDLER_ON_STOP_TIMEOUT: {
+    level: 'warning',
+    message: 'Timeout on stop',
+  },
+
   RADIUS_ON_HANDLE_ERROR: {
     level: 'err',
     message: 'Failed to handle packet from ${address}:${port} (${family}). ${error}',

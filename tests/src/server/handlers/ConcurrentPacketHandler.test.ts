@@ -22,7 +22,12 @@ describe('@app/server/handlers/ConcurrentPacketHandler', () => {
     });
 
     // Check if the handler returned the correct responses (echoed packets)
-    const responses = (await Promise.all(promises)).map((response) => response.toString());
+    const responses = (await Promise.all(promises)).map((response) => {
+      if (response === null) {
+        return null;
+      }
+      return response.toString();
+    });
     const expectedResponses = [...Array(concurrency).keys()].map((index) => `test ${index}`);
     expect(responses).toEqual(expectedResponses);
 
@@ -75,8 +80,8 @@ describe('@app/server/handlers/ConcurrentPacketHandler', () => {
       await handler.onStop();
       const logs = global.mockLogger.logs;
       expect(logs).toHaveLength(1);
-      const [message, level] = logs[0];
-      expect(message).toBe('Timeout on stop');
+      const [code, level] = logs[0];
+      expect(code).toBe('CONCURRENT_PACKET_HANDLER_ON_STOP_TIMEOUT');
       expect(level).toBe('warning');
     } finally {
       // Abort the packet processing
