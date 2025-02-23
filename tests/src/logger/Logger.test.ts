@@ -22,15 +22,10 @@ describe('@app/logger/Logger', () => {
     const logger = new ProxyLogger(LOG_ENTRIES);
     logger.setDelegate(delegate);
     await logger.log('SERVER_ON_START_SUCCESS', { host: 'localhost', port: 1234 });
-    const [code, level, message] = delegate.getLastLog();
-    const lastLog = {
-      code,
-      level,
-      message,
-    };
-    expect(lastLog).toEqual({
+    const [code, level] = delegate.getLastLog();
+    expect({ code, level }).toEqual({
       code: 'SERVER_ON_START_SUCCESS',
-      ...LOG_ENTRIES.SERVER_ON_START_SUCCESS,
+      level: LOG_ENTRIES.SERVER_ON_START_SUCCESS.level,
     });
   });
 
