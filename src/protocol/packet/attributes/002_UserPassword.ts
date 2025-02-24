@@ -3,6 +3,7 @@ import { staticImplements } from '@app/decorators/staticImplements';
 import { AbstractAttribute } from '@app/protocol/packet/attributes/AbstractAttribute';
 import { RadiusPasswordEncryption } from '@app/protocol/crypt/RadiusPasswordEncryption';
 import { NAS } from '@app/protocol/nas/NAS';
+
 @staticImplements<IAttributeStatic>()
 export class UserPassword extends AbstractAttribute implements IAttribute {
   public static readonly TYPE = 2;
