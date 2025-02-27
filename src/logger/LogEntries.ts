@@ -35,6 +35,31 @@ export const LOG_ENTRIES = {
     message: 'Timeout on stop',
   },
 
+  RADIUS_ON_HANDLE_NAS_NOT_FOUND: {
+    level: 'warning',
+    message: 'NAS not found for ${address}:${port}',
+  },
+  RADIUS_ON_HANDLE_IDENTIFIER_DUPLICATED: {
+    level: 'warning',
+    message: 'Duplicate packet from ${address}:${port} (${family}).',
+  },
+  RADIUS_ON_HANDLE_PACKET_DECODE_ERROR: {
+    level: 'warning',
+    message: 'Failed to decode packet from ${address}:${port} (${family}). ${error}',
+  },
+  RADIUS_IDENTIFIER_REMOVE_ERROR: {
+    level: 'err',
+    message: 'Failed to remove identifier from ${address}:${port} (${family}). ${error}',
+  },
+  RADIUS_IDENTIFIER_CLEANUP_ERROR: {
+    level: 'err',
+    message: 'Failed to cleanup identifiers. ${error}',
+  },
+  RADIUS_IDENTIFIER_CLEANUP_SUCCESS: {
+    level: 'debug',
+    message:
+      'Identifier cleanup completed. Count changed from ${beforeCleanup} to ${afterCleanup} (${cleaned} entries removed)',
+  },
   RADIUS_ON_HANDLE_ERROR: {
     level: 'err',
     message: 'Failed to handle packet from ${address}:${port} (${family}). ${error}',
