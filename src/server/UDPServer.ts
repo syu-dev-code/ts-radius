@@ -60,7 +60,7 @@ export class UDPServer {
     if (!this.isRunning) {
       throw new Error('Server is not running');
     }
-    await this.handler.onStop();
+    await this.handler.dispose();
     return new Promise<void>((resolve) => {
       this.server?.close(resolve);
     }).then(() => {

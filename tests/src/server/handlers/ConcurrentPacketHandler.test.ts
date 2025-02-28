@@ -1,7 +1,7 @@
 import { ConcurrentPacketHandler } from '@app/server/handlers/ConcurrentPacketHandler';
 import { EchoPacketHandler2 } from '@tests/src/server/__mocks/EchoPacketHandler2';
-import { OnStopTestPacketHandler } from '@tests/src/server/__mocks/OnStopTestPacketHandler';
-import { OnStopTestPacketHandler2 } from '@tests/src/server/__mocks/OnStopTestPacketHandler2';
+import { DisposeTestPacketHandler } from '@tests/src/server/__mocks/DisposeTestPacketHandler';
+import { DisposeTestPacketHandler2 } from '@tests/src/server/__mocks/DisposeTestPacketHandler2';
 import type { RemoteInfo } from 'dgram';
 
 describe('@app/server/handlers/ConcurrentPacketHandler', () => {
@@ -39,7 +39,7 @@ describe('@app/server/handlers/ConcurrentPacketHandler', () => {
     const delegate = new EchoPacketHandler2();
     const concurrency = 11;
     const handler = new ConcurrentPacketHandler(concurrency, delegate);
-    await handler.onStop();
+    await handler.dispose();
 
     const promises = [...Array(concurrency).keys()].map((index) => {
       const buffer = Buffer.from(`test ${index}`);
@@ -60,11 +60,11 @@ describe('@app/server/handlers/ConcurrentPacketHandler', () => {
     expect(delegate.handledPackets).toHaveLength(0);
   });
 
-  it('returns from onStop after the timeout without waiting for ongoing packet processing to complete', async () => {
-    const onStopTimeout = 200;
+  it('returns from dispose method after the timeout without waiting for ongoing packet processing to complete', async () => {
+    const disposeTimeoutMs = 200;
 
-    const delegate = new OnStopTestPacketHandler();
-    const handler = new ConcurrentPacketHandler(1, delegate, onStopTimeout);
+    const delegate = new DisposeTestPacketHandler();
+    const handler = new ConcurrentPacketHandler(1, delegate, disposeTimeoutMs);
     const buffer = Buffer.from('test');
     const rinfo: RemoteInfo = {
       address: '127.0.0.1',
@@ -73,15 +73,15 @@ describe('@app/server/handlers/ConcurrentPacketHandler', () => {
       size: buffer.length,
     };
 
-    // Start processing a packet, which will not finish before the onStopTimeout is reached
+    // Start processing a packet, which will not finish before the disposeTimeoutMs is reached
     const promise = handler.handle(buffer, rinfo);
 
     try {
-      await handler.onStop();
+      await handler.dispose();
       const logs = global.mockLogger.logs;
       expect(logs).toHaveLength(1);
       const [code, level] = logs[0];
-      expect(code).toBe('CONCURRENT_PACKET_HANDLER_ON_STOP_TIMEOUT');
+      expect(code).toBe('CONCURRENT_PACKET_HANDLER_DISPOSE_TIMEOUT');
       expect(level).toBe('warning');
     } finally {
       // Abort the packet processing
@@ -91,12 +91,12 @@ describe('@app/server/handlers/ConcurrentPacketHandler', () => {
     }
   });
 
-  it('returns from onStop before the timeout is reached', async () => {
+  it('returns from dispose method before the timeout is reached', async () => {
     const handlerWillResponseAfter = 200;
-    const onStopTimeout = 500;
+    const disposeTimeoutMs = 500;
 
-    const delegate = new OnStopTestPacketHandler2(handlerWillResponseAfter);
-    const handler = new ConcurrentPacketHandler(1, delegate, onStopTimeout);
+    const delegate = new DisposeTestPacketHandler2(handlerWillResponseAfter);
+    const handler = new ConcurrentPacketHandler(1, delegate, disposeTimeoutMs);
     const buffer = Buffer.from('test');
     const rinfo: RemoteInfo = {
       address: '127.0.0.1',
@@ -105,11 +105,11 @@ describe('@app/server/handlers/ConcurrentPacketHandler', () => {
       size: buffer.length,
     };
 
-    // Start processing a packet, which will finish before the onStopTimeout is reached
+    // Start processing a packet, which will finish before the disposeTimeoutMs is reached
     const promise = handler.handle(buffer, rinfo);
 
     try {
-      await handler.onStop();
+      await handler.dispose();
       const logs = global.mockLogger.logs;
       expect(logs).toHaveLength(0);
     } finally {

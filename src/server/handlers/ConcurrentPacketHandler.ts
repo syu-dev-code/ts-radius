@@ -15,10 +15,10 @@ export class ConcurrentPacketHandler implements IPacketHandler {
   private delegate: IPacketHandler;
 
   /**
-   * @description The timeout for the handler to stop. (in milliseconds)
-   * If the handler does not stop within the timeout, it will be forcibly stopped.
+   * @description The timeout for the handler to dispose. (in milliseconds)
+   * If the handler does not dispose within the timeout, it will be forcibly disposed.
    */
-  private timeoutOnStop: number;
+  private disposeTimeoutMs: number;
 
   /**
    * @description Whether the handler is locked.
@@ -26,10 +26,10 @@ export class ConcurrentPacketHandler implements IPacketHandler {
    */
   private isQueueLocked: boolean = false;
 
-  constructor(concurrency: number, delegate: IPacketHandler, timeoutOnStop: number = 10000) {
+  constructor(concurrency: number, delegate: IPacketHandler, disposeTimeoutMs: number = 10000) {
     this.queue = new PromiseQueue(concurrency);
     this.delegate = delegate;
-    this.timeoutOnStop = timeoutOnStop;
+    this.disposeTimeoutMs = disposeTimeoutMs;
   }
 
   async handle(buffer: Buffer, rinfo: RemoteInfo): Promise<Buffer | null> {
@@ -47,14 +47,14 @@ export class ConcurrentPacketHandler implements IPacketHandler {
     return this.queue.getPendingLength() === 0 && this.queue.getQueueLength() === 0;
   }
 
-  public async onStop(): Promise<void> {
+  public async dispose(): Promise<void> {
     // Lock the handler to prevent new packets from being processed
     this.isQueueLocked = true;
     // Wait for the queue to empty or the timeout to expire
     await new Promise<void>((resolve) => {
       const clearup = async (isTimeout: boolean) => {
         if (isTimeout) {
-          await Logger.log('CONCURRENT_PACKET_HANDLER_ON_STOP_TIMEOUT', {});
+          await Logger.log('CONCURRENT_PACKET_HANDLER_DISPOSE_TIMEOUT', {});
         }
         clearInterval(pollingTimer);
         clearTimeout(timeoutTimer);
@@ -67,10 +67,10 @@ export class ConcurrentPacketHandler implements IPacketHandler {
         }
       }, 100);
       // Set a timeout to stop the handler if the queue doesn't empty within the timeout
-      const timeoutTimer = setTimeout(() => clearup(true), this.timeoutOnStop);
+      const timeoutTimer = setTimeout(() => clearup(true), this.disposeTimeoutMs);
     });
     // Wait for the delegate to stop
-    await this.delegate.onStop();
+    await this.delegate.dispose();
 
     // NOTE: Not unlocking the handler here, because it's not safe to do so.
   }

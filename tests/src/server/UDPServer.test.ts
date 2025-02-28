@@ -1,7 +1,7 @@
 import { LOG_ENTRIES } from '@app/logger/LogEntries';
 import { UDPServer } from '@app/server/UDPServer';
 import { EchoPacketHandler } from '@tests/src/server/__mocks/EchoPacketHandler';
-import { OnStopTestPacketHandler } from '@tests/src/server/__mocks/OnStopTestPacketHandler';
+import { DisposeTestPacketHandler } from '@tests/src/server/__mocks/DisposeTestPacketHandler';
 import { SilentPacketHandler } from '@tests/src/server/__mocks/SilentPacketHandler';
 import { ThrowErrorPacketHandler } from '@tests/src/server/__mocks/ThrowErrorPacketHandler';
 import { UDPClient } from '@tests/src/server/__mocks/UDPClient';
@@ -128,7 +128,7 @@ describe('@app/server/UDPServer', () => {
   });
 
   it('should be able to log on send error', async () => {
-    const handler = new OnStopTestPacketHandler();
+    const handler = new DisposeTestPacketHandler();
     const server = new UDPServer(global.UDP.port, global.UDP.address, handler);
     const client = new UDPClient(global.UDP.port, global.UDP.address);
     try {

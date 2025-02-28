@@ -9,7 +9,7 @@ export class SilentPacketHandler implements IPacketHandler {
     return Promise.resolve(null);
   }
 
-  onStop(): Promise<void> {
+  async dispose(): Promise<void> {
     return Promise.resolve();
   }
 }

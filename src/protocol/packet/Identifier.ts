@@ -1,6 +1,6 @@
 import { Logger } from '@app/logger/Logger';
 import type { RemoteInfo } from 'dgram';
-
+import type { Disposable } from '@app/types/Disposable';
 /**
  * In-memory implementation of the identifier provider.
  * Manages packet identifiers and provides duplicate detection.
@@ -14,7 +14,7 @@ import type { RemoteInfo } from 'dgram';
  */
 export class MemoryIdentifierProvider implements IIdentifierProvider {
   private store: Map<string, Date> = new Map();
-  private timer: NodeJS.Timeout;
+  private timer?: NodeJS.Timeout;
 
   /**
    * Creates a new instance of MemoryIdentifierProvider.
@@ -174,11 +174,9 @@ export class MemoryIdentifierProvider implements IIdentifierProvider {
    * Disposes of resources used by this provider.
    * This method should be called when the provider is no longer needed.
    */
-  dispose(): void {
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = undefined as unknown as NodeJS.Timeout;
-    }
+  async dispose() {
+    clearTimeout(this.timer);
+    this.timer = undefined;
     this.store.clear();
   }
 }
@@ -187,7 +185,7 @@ export class MemoryIdentifierProvider implements IIdentifierProvider {
  * Interface for identifier providers.
  * Defines methods for managing packet identifiers and detecting duplicates.
  */
-export interface IIdentifierProvider {
+export interface IIdentifierProvider extends Disposable {
   /**
    * Gets the last access time for a packet identifier.
    * @param rinfo - The remote info object

@@ -1,10 +1,10 @@
 import type { RemoteInfo } from 'dgram';
-
+import type { Disposable } from '@app/types/Disposable';
 /**
  * Interface for handling UDP packets.
  * Used to implement various packet processing handlers for the server.
  */
-export interface IPacketHandler {
+export interface IPacketHandler extends Disposable {
   /**
    * Handles a UDP packet.
    * @param packet - The UDP packet to be handled.
@@ -12,9 +12,4 @@ export interface IPacketHandler {
    * @returns A response buffer to the UDP packet, or `null` if the packet must be silently discarded (the server must **not** send any response).
    */
   handle(packet: Buffer, rinfo: RemoteInfo): Promise<Buffer | null>;
-
-  /**
-   * Called when the server is stopping. Clean up any resources if necessary.
-   */
-  onStop(): Promise<void>;
 }

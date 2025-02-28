@@ -3,7 +3,7 @@ import type { RemoteInfo } from 'dgram';
 
 export class EchoPacketHandler2 implements IPacketHandler {
   public handledPackets: [RemoteInfo, Buffer][] = [];
-  async onStop(): Promise<void> {
+  async dispose(): Promise<void> {
     return;
   }
 

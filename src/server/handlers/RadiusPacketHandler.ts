@@ -50,10 +50,7 @@ export class RadiusPacketHandler implements IPacketHandler {
     }
   }
 
-  async onStop(): Promise<void> {
-    // If the IdentifierProvider has a dispose method, call it
-    // if ('dispose' in this.identifierProvider) {
-    //   (this.identifierProvider as any).dispose();
-    // }
+  async dispose(): Promise<void> {
+    await this.identifierProvider.dispose();
   }
 }

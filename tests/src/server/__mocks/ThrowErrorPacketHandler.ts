@@ -10,7 +10,7 @@ export class ThrowErrorPacketHandler implements IPacketHandler {
     throw new Error(this.message);
   }
 
-  onStop(): Promise<void> {
+  async dispose(): Promise<void> {
     return Promise.resolve();
   }
 }
