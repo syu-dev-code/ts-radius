@@ -36,7 +36,6 @@ export class RadiusPacketHandler implements IPacketHandler {
       try {
         // Process the packet
         const response = packet.encode(nas);
-        await new Promise((resolve) => setTimeout(resolve, 10000));
         Logger.log('RADIUS_ON_HANDLE_SUCCESS', { ...rinfo });
         return response;
       } finally {
