@@ -2,6 +2,7 @@ import { Logger } from '@app/logger/Logger';
 import { IPacketHandler } from '@app/server/handlers/IPacketHandler';
 import type { RemoteInfo } from 'dgram';
 import { PromiseQueue } from '@app/lib/PromiseQueue';
+import { withResolvers } from '@app/lib/Promise.withResolvers';
 
 export class ConcurrentPacketHandler implements IPacketHandler {
   /**
@@ -50,25 +51,27 @@ export class ConcurrentPacketHandler implements IPacketHandler {
   public async dispose(): Promise<void> {
     // Lock the handler to prevent new packets from being processed
     this.isQueueLocked = true;
+
     // Wait for the queue to empty or the timeout to expire
-    await new Promise<void>((resolve) => {
-      const clearup = async (isTimeout: boolean) => {
-        if (isTimeout) {
-          await Logger.log('CONCURRENT_PACKET_HANDLER_DISPOSE_TIMEOUT', {});
-        }
-        clearInterval(pollingTimer);
-        clearTimeout(timeoutTimer);
-        resolve();
-      };
-      // Poll the queue to check if it's empty
-      const pollingTimer = setInterval(async () => {
-        if (this.isEmpty()) {
-          return await clearup(false);
-        }
-      }, 100);
-      // Set a timeout to stop the handler if the queue doesn't empty within the timeout
-      const timeoutTimer = setTimeout(() => clearup(true), this.disposeTimeoutMs);
-    });
+    const { promise: waitPromise, resolve } = withResolvers<void>();
+    const clearup = async (isTimeout: boolean) => {
+      if (isTimeout) {
+        await Logger.log('CONCURRENT_PACKET_HANDLER_DISPOSE_TIMEOUT', {});
+      }
+      clearInterval(pollingTimer);
+      clearTimeout(timeoutTimer);
+      resolve();
+    };
+    // Poll the queue to check if it's empty
+    const pollingTimer = setInterval(async () => {
+      if (this.isEmpty()) {
+        return await clearup(false);
+      }
+    }, 100);
+    // Set a timeout to stop the handler if the queue doesn't empty within the timeout
+    const timeoutTimer = setTimeout(() => clearup(true), this.disposeTimeoutMs);
+    await waitPromise;
+
     // Wait for the delegate to stop
     await this.delegate.dispose();
 

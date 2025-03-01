@@ -1,6 +1,7 @@
 import { createSocket, RemoteInfo, Socket } from 'dgram';
 import { IPacketHandler } from '@app/server/handlers/IPacketHandler';
 import { Logger } from '@app/logger/Logger';
+import { withResolvers } from '@app/lib/Promise.withResolvers';
 
 export class UDPServer {
   private server: Socket | null = null;
@@ -36,24 +37,26 @@ export class UDPServer {
   }
 
   private setup(): Promise<Socket> {
-    return new Promise<Socket>((resolve, reject) => {
-      const server = createSocket('udp4');
-      const onListening = () => {
-        server.removeListener('error', onError);
-        server.on('message', this.onMessage.bind(this));
-        server.on('error', (error) => {
-          Logger.log('SERVER_ON_UNHANDLE_ERROR', { error: `${error}` });
-        });
-        resolve(server);
-      };
-      const onError = (error: Error) => {
-        server.removeListener('listening', onListening);
-        server.close(() => reject(error));
-      };
-      server.once('listening', onListening);
-      server.once('error', onError);
-      server.bind(this.port, this.host);
-    });
+    const { promise: setupPromise, resolve, reject } = withResolvers<Socket>();
+
+    const server = createSocket('udp4');
+    const onListening = () => {
+      server.removeListener('error', onError);
+      server.on('message', this.onMessage.bind(this));
+      server.on('error', (error) => {
+        Logger.log('SERVER_ON_UNHANDLE_ERROR', { error: `${error}` });
+      });
+      resolve(server);
+    };
+    const onError = (error: Error) => {
+      server.removeListener('listening', onListening);
+      server.close(() => reject(error));
+    };
+    server.once('listening', onListening);
+    server.once('error', onError);
+    server.bind(this.port, this.host);
+
+    return setupPromise;
   }
 
   async stop(): Promise<void> {
