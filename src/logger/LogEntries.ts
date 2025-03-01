@@ -36,7 +36,7 @@ export const LOG_ENTRIES = {
   },
 
   RADIUS_ON_HANDLE_NAS_NOT_FOUND: {
-    level: 'warning',
+    level: 'notice',
     message: 'NAS not found for ${address}:${port}',
   },
   RADIUS_ON_HANDLE_PACKET_DECODE_ERROR: {
