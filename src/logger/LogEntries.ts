@@ -39,26 +39,26 @@ export const LOG_ENTRIES = {
     level: 'warning',
     message: 'NAS not found for ${address}:${port}',
   },
-  RADIUS_ON_HANDLE_IDENTIFIER_DUPLICATED: {
-    level: 'warning',
-    message: 'Duplicate packet from ${address}:${port} (${family}).',
-  },
   RADIUS_ON_HANDLE_PACKET_DECODE_ERROR: {
     level: 'warning',
     message: 'Failed to decode packet from ${address}:${port} (${family}). ${error}',
   },
-  RADIUS_IDENTIFIER_REMOVE_ERROR: {
-    level: 'err',
-    message: 'Failed to remove identifier from ${address}:${port} (${family}). ${error}',
+  RADIUS_TRANSACTION_DUPLICATED_REQUEST: {
+    level: 'warning',
+    message: 'Duplicate packet from ${address}:${port} (${family}).',
   },
-  RADIUS_IDENTIFIER_CLEANUP_ERROR: {
+  RADIUS_TRANSACTION_RELEASE_ERROR: {
     level: 'err',
-    message: 'Failed to cleanup identifiers. ${error}',
+    message: 'Failed to release transaction for ${address}:${port} (${family}). ${error}',
   },
-  RADIUS_IDENTIFIER_CLEANUP_SUCCESS: {
+  RADIUS_TRANSACTION_CLEANUP_ERROR: {
+    level: 'err',
+    message: 'Failed to cleanup transactions. ${error}',
+  },
+  RADIUS_TRANSACTION_CLEANUP_SUCCESS: {
     level: 'debug',
     message:
-      'Identifier cleanup completed. Count changed from ${beforeCleanup} to ${afterCleanup} (${cleaned} entries removed)',
+      'Transaction cleanup completed. Count changed from ${beforeCleanup} to ${afterCleanup} (${cleaned} entries removed)',
   },
   RADIUS_ON_HANDLE_ERROR: {
     level: 'err',

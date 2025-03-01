@@ -4,12 +4,12 @@ import { IPacketHandler } from '@app/server/handlers/IPacketHandler';
 import { INasProvider } from '@app/protocol/nas/INasProvider';
 import { PacketDecodeError } from '@app/error/PacketDecodeError';
 import { Logger } from '@app/logger/Logger';
-import { IIdentifierProvider } from '@app/protocol/packet/Identifier';
+import { RadiusTransaction } from '@app/protocol/packet/RadiusTransaction';
 
 export class RadiusPacketHandler implements IPacketHandler {
   constructor(
     private readonly nasProvider: INasProvider,
-    private readonly identifierProvider: IIdentifierProvider
+    private readonly transaction: RadiusTransaction
   ) {}
 
   async handle(buffer: Buffer, rinfo: RemoteInfo): Promise<Buffer | null> {
@@ -26,22 +26,23 @@ export class RadiusPacketHandler implements IPacketHandler {
         return null;
       }
 
-      // Check if the packet is a duplicate using identifier and authenticator
-      const isNotDuplicate = await this.identifierProvider.checkAndSet(rinfo, packet.identifier);
-
+      // Acquire a transaction for the packet
+      const isNotDuplicate = await this.transaction.acquire(rinfo, packet.identifier);
       if (!isNotDuplicate) {
-        Logger.log('RADIUS_ON_HANDLE_IDENTIFIER_DUPLICATED', { ...rinfo });
+        Logger.log('RADIUS_TRANSACTION_DUPLICATED_REQUEST', { ...rinfo });
         return null;
       }
 
       try {
         // Process the packet
         const response = packet.encode(nas);
+        await new Promise((resolve) => setTimeout(resolve, 10000));
         Logger.log('RADIUS_ON_HANDLE_SUCCESS', { ...rinfo });
         return response;
       } finally {
-        this.identifierProvider.remove(rinfo, packet.identifier).catch((error) => {
-          Logger.log('RADIUS_IDENTIFIER_REMOVE_ERROR', { ...rinfo, error: `${error}` });
+        // Release the transaction for the packet
+        this.transaction.release(rinfo, packet.identifier).catch((error) => {
+          Logger.log('RADIUS_TRANSACTION_RELEASE_ERROR', { ...rinfo, error: `${error}` });
         });
       }
     } catch (error) {
@@ -51,6 +52,6 @@ export class RadiusPacketHandler implements IPacketHandler {
   }
 
   async dispose(): Promise<void> {
-    await this.identifierProvider.dispose();
+    await this.transaction.dispose();
   }
 }
