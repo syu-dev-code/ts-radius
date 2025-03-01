@@ -14,32 +14,40 @@ export class RadiusPacketHandler implements IPacketHandler {
 
   async handle(buffer: Buffer, rinfo: RemoteInfo): Promise<Buffer | null> {
     try {
+      // Get the NAS
       const nas = await this.nasProvider.getNas(rinfo.address);
       if (nas === null) {
         Logger.log('RADIUS_ON_HANDLE_NAS_NOT_FOUND', { ...rinfo });
         return null;
       }
 
+      // Decode the packet
       const packet = Packet.from(buffer, nas);
       if (packet instanceof PacketDecodeError) {
         Logger.log('RADIUS_ON_HANDLE_PACKET_DECODE_ERROR', { ...rinfo, error: packet.message });
         return null;
       }
 
-      // Acquire a transaction for the packet
-      const isNotDuplicate = await this.transaction.acquire(rinfo, packet.identifier);
-      if (!isNotDuplicate) {
-        Logger.log('RADIUS_TRANSACTION_DUPLICATED_REQUEST', { ...rinfo });
+      // Acquire a transaction for processing the packet
+      try {
+        const isNotDuplicate = await this.transaction.acquire(rinfo, packet.identifier);
+        if (!isNotDuplicate) {
+          Logger.log('RADIUS_TRANSACTION_DUPLICATED_REQUEST', { ...rinfo });
+          return null;
+        }
+      } catch (error) {
+        Logger.log('RADIUS_TRANSACTION_ACQUIRE_ERROR', { ...rinfo, error: `${error}` });
         return null;
       }
 
+      // Process the packet
       try {
-        // Process the packet
+        // TODO: Implement the packet processing logic
         const response = packet.encode(nas);
         Logger.log('RADIUS_ON_HANDLE_SUCCESS', { ...rinfo });
         return response;
       } finally {
-        // Release the transaction for the packet
+        // Release the transaction for processing the packet
         this.transaction.release(rinfo, packet.identifier).catch((error) => {
           Logger.log('RADIUS_TRANSACTION_RELEASE_ERROR', { ...rinfo, error: `${error}` });
         });

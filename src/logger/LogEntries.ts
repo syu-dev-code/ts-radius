@@ -47,6 +47,10 @@ export const LOG_ENTRIES = {
     level: 'warning',
     message: 'Duplicate packet from ${address}:${port} (${family}).',
   },
+  RADIUS_TRANSACTION_ACQUIRE_ERROR: {
+    level: 'err',
+    message: 'Failed to acquire transaction for ${address}:${port} (${family}). ${error}',
+  },
   RADIUS_TRANSACTION_RELEASE_ERROR: {
     level: 'err',
     message: 'Failed to release transaction for ${address}:${port} (${family}). ${error}',
