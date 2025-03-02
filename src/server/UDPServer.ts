@@ -21,19 +21,13 @@ export class UDPServer {
       throw new Error('Server is already running');
     }
 
-    this.server = await this.setup()
-      .then((server) => {
-        Logger.log('SERVER_ON_START_SUCCESS', { port: this.port, host: this.host });
-        return server;
-      })
-      .catch((error) => {
-        Logger.log('SERVER_ON_START_FAILED', {
-          port: this.port,
-          host: this.host,
-          error: `${error}`,
-        });
-        throw error;
-      });
+    try {
+      this.server = await this.setup();
+      Logger.log('SERVER_ON_START_SUCCESS', { port: this.port, host: this.host });
+    } catch (error) {
+      Logger.log('SERVER_ON_START_FAILED', { port: this.port, host: this.host, error: `${error}` });
+      throw error;
+    }
   }
 
   private setup(): Promise<Socket> {
