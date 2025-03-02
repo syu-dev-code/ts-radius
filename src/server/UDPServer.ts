@@ -58,12 +58,12 @@ export class UDPServer {
       throw new Error('Server is not running');
     }
     await this.handler.dispose();
-    return new Promise<void>((resolve) => {
-      this.server?.close(resolve);
-    }).then(() => {
-      this.server = null;
-      Logger.log('SERVER_ON_STOP', {});
-    });
+
+    const { promise: stopPromise, resolve } = withResolvers<void>();
+    this.server?.close(resolve);
+    await stopPromise;
+    this.server = null;
+    Logger.log('SERVER_ON_STOP', {});
   }
 
   private async onMessage(buffer: Buffer, rinfo: RemoteInfo) {
