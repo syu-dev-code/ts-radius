@@ -13,6 +13,10 @@ export const LOG_ENTRIES = {
     level: 'info',
     message: 'Server stopped',
   },
+  SERVER_ON_STOP_ERROR: {
+    level: 'err',
+    message: 'Error occurred while stopping the server. ${error}',
+  },
   SERVER_ON_UNHANDLE_ERROR: {
     level: 'crit',
     message: 'Unhandled error on server: ${error}',

@@ -57,13 +57,21 @@ export class UDPServer {
     if (!this.isRunning) {
       throw new Error('Server is not running');
     }
-    await this.handler.dispose();
 
+    try {
+      await this.tearDown();
+      this.server = null;
+      Logger.log('SERVER_ON_STOP', {});
+    } catch (error) {
+      Logger.log('SERVER_ON_STOP_ERROR', { error: `${error}` });
+    }
+  }
+
+  private async tearDown() {
+    await this.handler.dispose();
     const { promise: stopPromise, resolve } = withResolvers<void>();
     this.server?.close(resolve);
-    await stopPromise;
-    this.server = null;
-    Logger.log('SERVER_ON_STOP', {});
+    return stopPromise;
   }
 
   private async onMessage(buffer: Buffer, rinfo: RemoteInfo) {

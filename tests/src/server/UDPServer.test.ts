@@ -6,6 +6,7 @@ import { SilentPacketHandler } from '@tests/src/server/__mocks/SilentPacketHandl
 import { ThrowErrorPacketHandler } from '@tests/src/server/__mocks/ThrowErrorPacketHandler';
 import { UDPClient } from '@tests/src/server/__mocks/UDPClient';
 import { Socket } from 'dgram';
+import { IPacketHandler } from '@app/server/handlers/IPacketHandler';
 
 describe('@app/server/UDPServer', () => {
   it('should be able to start', async () => {
@@ -207,5 +208,30 @@ describe('@app/server/UDPServer', () => {
       await server.stop();
       await client.close();
     }
+  });
+
+  describe('stop', () => {
+    it('should log error when tearDown fails', async () => {
+      const mockError = new Error('Tear down failed');
+      const mockHandler = {
+        dispose: jest.fn().mockRejectedValue(mockError),
+        handle: jest.fn(),
+      };
+
+      const server = new UDPServer(global.UDP.port, global.UDP.address, mockHandler);
+
+      try {
+        await server.start();
+        await server.stop();
+        const [code, level] = global.mockLogger.getLastLog();
+        expect(code).toBe('SERVER_ON_STOP_ERROR');
+        expect(level).toBe('err');
+      } catch (error) {
+        fail(error);
+      } finally {
+        mockHandler.dispose = jest.fn();
+        await server.stop();
+      }
+    });
   });
 });
