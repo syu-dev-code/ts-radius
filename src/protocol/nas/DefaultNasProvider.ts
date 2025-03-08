@@ -1,6 +1,6 @@
 import { RemoteInfo } from 'dgram';
-import { NAS, NASConfig } from './NAS';
-import { INasProvider } from './INasProvider';
+import { NAS, NASConfig } from '@app/protocol/nas/NAS';
+import { INasProvider } from '@app/protocol/nas/INasProvider';
 
 export class DefaultNasProvider implements INasProvider {
   private store: NAS[] = [];
