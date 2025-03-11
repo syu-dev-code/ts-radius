@@ -4,7 +4,7 @@ import { AttributeFactory } from '@app/protocol/packet/AttributeFactory';
 import { IAttribute } from '@app/protocol/packet/attributes/IAttribute';
 import { Attributes } from '@app/protocol/packet/attributes/Attributes';
 import { AttributeError } from '@app/error/AttributeError';
-import { NAS } from '../nas/NAS';
+import { NAS } from '@app/protocol/nas/NAS';
 
 export class AttributeDecoder {
   private static HEADER_LENGTH = 20;
