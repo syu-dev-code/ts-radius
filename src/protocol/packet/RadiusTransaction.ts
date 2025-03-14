@@ -38,7 +38,7 @@ export interface RadiusTransaction extends Disposable {
  * implementation with an external data store for multi-process deployments.
  */
 export class MemoryRadiusTransaction implements RadiusTransaction {
-  private store: Map<string, Date> = new Map();
+  private store: Map<string, number> = new Map();
   private timer?: NodeJS.Timeout;
 
   /**
@@ -93,12 +93,13 @@ export class MemoryRadiusTransaction implements RadiusTransaction {
   async acquire(rinfo: RemoteInfo, identifier: number): Promise<boolean> {
     const key = this.generateKey(rinfo, identifier);
     const lastAccess = this.store.get(key);
+    const now = Date.now();
 
-    if (lastAccess !== undefined && lastAccess.getTime() > Date.now() - this.duplicateTimeout) {
+    if (lastAccess !== undefined && lastAccess > now - this.duplicateTimeout) {
       return false; // Already acquired (duplicate packet)
     }
 
-    this.store.set(key, new Date());
+    this.store.set(key, now);
     return true; // Successfully acquired
   }
 
@@ -115,7 +116,7 @@ export class MemoryRadiusTransaction implements RadiusTransaction {
       return;
     }
 
-    const elapsedTime = Date.now() - lastAccess.getTime();
+    const elapsedTime = Date.now() - lastAccess;
     const remainingTime = Math.max(0, this.duplicateTimeout - elapsedTime);
     await new Promise((resolve) => setTimeout(resolve, remainingTime));
     this.store.delete(key);
@@ -135,7 +136,7 @@ export class MemoryRadiusTransaction implements RadiusTransaction {
 
     // Process each key and remove expired entries
     for (const [key, timestamp] of this.store.entries()) {
-      if (timestamp.getTime() < expirationTime) {
+      if (timestamp < expirationTime) {
         this.store.delete(key);
       }
     }
