@@ -5,10 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "sh tools/run-test.sh",
-    "test:watch": "jest --watch",
     "watch": "tsx watch tools/Radius.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\""
   },
