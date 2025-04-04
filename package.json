@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "sh tools/run-test.sh",
-    "watch": "tsx watch tools/Radius.ts",
+    "server": "tsx watch tools/Radius.ts",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\""
   },
