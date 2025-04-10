@@ -1,8 +1,7 @@
 import type { RemoteInfo } from 'dgram';
 import fs from 'fs/promises';
-import { ISecretProvider } from '@app/protocol/secret/ISecretProvider';
 
-export class JsonFileSecretProvider implements ISecretProvider {
+export class JsonFileSecretProvider {
   private readonly filePath: string;
   private cache: { [key: string]: string } = {};
 
